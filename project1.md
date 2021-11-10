@@ -19,7 +19,8 @@ Note: The EC2 instance is not created here. It has been created already
 ```
  sudo service apache2 status
 ```
-![](Images/apachestatus.PNG) 
+![](Images/apachestatus.PNG)
+
 3. Add a new inbound rule to the EC2 Instance's firewall; this will allow the
  EC2 Instance to receive HTTP requests from the Internet.
  ![](Images/inboundrules.PNG) 
@@ -158,4 +159,4 @@ vim /var/www/projectlamp/index.php
 phpinfo();
 ```
 5. Verify the website by visiting the website url
-![](Images/lampfinal.PNG) 
+![](Images/Lampfinal.PNG) 
