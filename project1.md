@@ -13,22 +13,22 @@ Note: The EC2 instance is not created here. It has been created already
 #run apache2 package installation
  sudo apt install apache2
 ```
-![](images/Apache1.png) 
+![images](/Images/Apache1.PNG) 
 
 2. Verify your installation by running the following command:
 ```
  sudo service apache2 status
 ```
-![](images/apachestatus.png) 
+![](Images/apachestatus.PNG) 
 3. Add a new inbound rule to the EC2 Instance's firewall; this will allow the
  EC2 Instance to receive HTTP requests from the Internet.
- ![](images/inboundrules.png) 
+ ![](Images/inboundrules.PNG) 
 
 4. Access you new apache web server using the following URL:
 ```
  http://<ec2-instance-public-ip-address>
 ```
-![](images/apachedefaultpage.png) 
+![](Images/apachedefaultpage.PNG) 
 NOTE: The EC2 Instance's public IP address can be found by running the following command:
 ```
  curl -s http://169.254.169.254/latest/meta-data/public-ipv4
@@ -46,16 +46,17 @@ that comes pre-installed with MySQL. This script will remove some insecure defau
 sudo mysql_secure_installation
 ```
 This will ask you to configure the validation plugin which helps with passsword strength check. If one wants it enabaled; answer Y to the prompt If not, press any other key.
-![](images/validtaionplugin.png) 
-
+<\br>
 <b> NOTE: Always use a strong password for MySQL. </b>
+
+![](Images/validtaionplugin.PNG) 
 
 3. Test your MySQL installation by running the following command:
 ```
 sudo mysql
 ```
 If installation is successful, you should see the following message:
-![](images/Mysqltest.png) 
+![](Images/Mysqltest.PNG) 
 
 <b>Note: At the time of this writing, the native MySQL PHP library mysqlnd doesn’t support caching_sha2_authentication, the default authentication method for MySQL 8. For that reason, when creating database users for PHP applications on MySQL 8, you’ll need to make sure they’re configured to use mysql_native_password instead.</b>
 
@@ -75,8 +76,8 @@ Image
 
 ### STEP 4 — CONFIGURING APACHE VIRTUAL HOST
 
-To create a domain (e.g projectlamp) for an app we need to create a virtual host for the domain. 
-![](images/VirtualHost.png) 
+To create a domain (e.g projectlamp) for an app we need to create a virtual host for the domain. <\br>
+![](Images/VirtualHost.PNG) 
 
 1. Create the directory for projectlamp using ‘mkdir’ command as follows:
 ```
@@ -123,7 +124,7 @@ sudo echo 'Hello LAMP from hostname' $(curl -s http://169.254.169.254/latest/met
 ```
 http://<Public-IP-Address>:80
 ``` 
-![](images/lampindex.png) 
+![](Images/lampindex.PNG) 
 ### STEP 5 — ENABLE PHP ON THE WEBSITE
 <b>NOTE: With the default DirectoryIndex settings on Apache, a file named index.html will always take precedence over an index.php file. This is useful for setting up maintenance pages in PHP applications. </b>
 
@@ -157,4 +158,4 @@ vim /var/www/projectlamp/index.php
 phpinfo();
 ```
 5. Verify the website by visiting the website url
-![](images/lampfinal.png) 
+![](Images/lampfinal.PNG) 
