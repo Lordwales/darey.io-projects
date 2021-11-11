@@ -117,7 +117,7 @@ sudo a2dissite 000-default  #disable default apache configuration
 ```
 sudo service apache2 restart  
 ```
-8. In order to access the website, we need to create an index.php file in the projectlamp directory and output a message.
+8. In order to access the website, we need to create an index.html file in the projectlamp directory and output a message.
 ```
 sudo echo 'Hello LAMP from hostname' $(curl -s http://169.254.169.254/latest/meta-data/public-hostname) 'with public IP' $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4) > /var/www/projectlamp/index.html
 ```
