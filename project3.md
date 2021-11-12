@@ -17,4 +17,6 @@ sudo apt-get install npm #run npm -v afterwards to check version
 mkdir Todo # create a new folder named Todo
 npm init -y # initialises a new project
 ```
-4. Run 'ls' to see the new folder contents
+4. Run 'ls' to see the new folder contents. Package.json would have being create and it is the file that contains the project's dependencies.
+
+### Step 2 – Install Express.js
