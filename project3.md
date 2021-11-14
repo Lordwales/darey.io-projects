@@ -269,7 +269,7 @@ class Input extends Component {
 
 state = {
 action: ""
-}
+} 
 
 addTodo = () => {
 const task = {action: this.state.action}
