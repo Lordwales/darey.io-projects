@@ -43,3 +43,5 @@ mysql --host=54.221.33.123  --user=Dammy -p OR mysql -h localhost -u myname -p m
 ```
 ![](Images/connectRemote.PNG)
  
+
+
