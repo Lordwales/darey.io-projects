@@ -41,7 +41,7 @@ sudo vi /etc/apache2/sites-available/000-default.conf
 #Restart apache server
 
 ```
-5. Restart the server
+5. Restart the apache server
 ```
 sudo systemctl restart apache2
 ```
@@ -76,3 +76,5 @@ BalancerMember http://Web1:80 loadfactor=5 timeout=1
 BalancerMember http://Web2:80 loadfactor=5 timeout=1
 ```
 ![](Images/webname.PNG)
+
+Restart the apache
