@@ -122,4 +122,3 @@ ansible-playbook -i /var/lib/jenkins/jobs/ansible-config-mgt/builds/<build numbe
 wireshark --versions
 ```
 ![](Images/wireshark.PNG)
-
