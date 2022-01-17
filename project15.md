@@ -18,6 +18,7 @@ The infrastructure for both websites, WordPress and Tooling, is resilient to Web
 - Move the DevOps account into the Dev OU.
 - Login to the newly created AWS account using the new email address.
 
+![](Images/uat-server.PNG)
 2. Created a free domain name for company at Freenom domain registrar here (https://www.freenom.com/).
 
 3.  Created a hosted zone in AWS, and map it to your free domain from Freenom. Check how to do this here (https://youtu.be/IjcHp94Hq8A).
@@ -30,12 +31,20 @@ The infrastructure for both websites, WordPress and Tooling, is resilient to Web
 
 1. Created a VPC
 2. Created subnets as shown in the architecture
+![](Images/createSubnet.PNG)
+![](Images/subnets.PNG)
 3. Created a route table and associate it with public subnets
+![](Images/associateSubnet.PNG)
 4. Created a route table and associate it with private subnets
+![](Images/private-route-subnet.PNG)
 5. Created an Internet Gateway
+
 6. Edit a route in public route table, and associate it with the Internet Gateway. (This is what allows a public subnet to be accisble from the Internet)
+![](Images/publicSubnetGateway.PNG)
 7. Created 3 Elastic IPs
+![](Images/elasticIPs.PNG)
 8. Created a Nat Gateway and assigned one of the Elastic IPs (*The other 2 was used by Bastion hosts)
+![](Images/natGateway.PNG)
 9. Created security groups for different services in the architecture
  
  - **Nginx Servers:** Access to Nginx should only be allowed from a Application Load balancer (ALB). At this point, we have not created a load balancer, therefore we will update the rules later. For now, just create it and put some dummy records as a place holder.
@@ -47,6 +56,8 @@ The infrastructure for both websites, WordPress and Tooling, is resilient to Web
 - **Webservers:** Access to Webservers should only be allowed from the Nginx servers. Since we do not have the servers created yet, just put some dummy records as a place holder, we will update it later.
 
 - **Data Layer:** Access to the Data layer, which is comprised of Amazon Relational Database Service (RDS) and Amazon Elastic File System (EFS) must be carefully desinged – only webservers should be able to connect to RDS, while Nginx and Webservers will have access to EFS Mountpoint.
+
+![](Images/securityGroups.PNG)
 
 
 ### Set Up Compute Resources for Nginx
@@ -62,7 +73,9 @@ The infrastructure for both websites, WordPress and Tooling, is resilient to Web
 #### Prepare Launch Template For Nginx (One Per Subnet)
 
 1. Make use of the AMI to set up a launch template
+![](Images/launchtemplate.PNG)
 2. Ensure the Instances are launched into a public subnet (public subnet 1 or 2)
+![](Images/instanceTemplate.PNG)
 3. Assign appropriate security group (NGINX SG)
 4. Configure Userdata to update yum package repository and install nginx
    * choose the instance name and stop it
@@ -104,21 +117,27 @@ Go to Target Groups section and create a new target group.
 3. Ensure that the health check path is /healthstatus
 4. Register Nginx Instances as targets
 5. Ensure that health check passes for the target group   
+![](Images/targetGroup.PNG)
 
 
 #### Configure Autoscaling For Nginx
 1. Select the right launch template
+![](Images/autoscale1.PNG)
 2. Select the VPC
+![](Images/autoscale2.PNG)
 3. Select both public subnets
 4. Enable Application Load Balancer for the AutoScalingGroup (ASG)
+![](Images/autoscale3.PNG)
 5. Select the target group you created before
 6. Ensure that you have health checks for both EC2 and ALB
+![](Images/autoscale4.PNG)
 7. The desired capacity is 2
 8. Minimum capacity is 2
 9. Maximum capacity is 4
 10. Set scale out if CPU utilization reaches 90%
+![](Images/autoscale5.PNG)
 11. Ensure there is an SNS topic to send scaling notifications
-
+![](Images/autoscale6.PNG)
 
 ### Set Up Compute Resources for Bastion
 
@@ -249,3 +268,76 @@ You will need TLS certificates to handle secured connectivity to your Applicatio
 4. Use DNS to validate the domain name. 
 5. Tag the resource
 6. Read the documentation [here](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-validation.html) to learn how to validate DNS with Route 53
+
+![](Images/demoCertificate.PNG)
+
+
+## STEP 4: CONFIGURE APPLICATION LOAD BALANCER (ALB)
+
+#### Application Load Balancer To Route Traffic To NGINX
+Nginx EC2 Instances will have configurations that accepts incoming traffic only from Load Balancers. This will allow us to offload SSL/TLS certificates on the ALB instead of Nginx. Therefore, Nginx will be able to perform faster since it will not require extra compute resources to valifate certificates for every request.
+
+1. Create an Internet facing ALB
+
+2. Ensure that it listens on HTTPS protocol (TCP port 443)
+3. Ensure the ALB is created within the appropriate VPC | AZ | Subnets
+![](Images/alb1.PNG)
+4. Choose the Certificate from ACM
+![](Images/alb2.PNG)
+5. Select Security Group
+![](Images/alb3.PNG)
+6. Select Nginx Instances as the target group
+![](Images/alb4.PNG)
+
+#### Application Load Balancer To Route Traffic To Web Servers (this would be repeated for Wordpress webserver and tooling webservers)
+Because of autoscaling, Nginx will not know about the new IP addresses, or the ones that get removed when there is a scale-out of the instances. Hence, Nginx will not know where to direct the traffic.
+
+To solve this problem, we must use a load balancer. But this time, it will be an internal load balancer since the webservers are within a private subnet, and we do not want direct access to them.
+
+1. Create an Internal ALB
+2. Ensure that it listens on HTTPS protocol (TCP port 443)
+3. Ensure the ALB is created within the appropriate VPC | AZ | Subnets
+4. Choose the Certificate from ACM
+5. Select Security Group
+6. Select webserver Instances as the target group
+7. Ensure that health check passes for the target group
+
+
+### STEP 5:Setup EFS
+
+1. Create an EFS filesystem
+2. Create an EFS mount target per AZ in the VPC, associate it with both subnets dedicated for data layer
+![](Images/EFS1.PNG)
+3. Associate the Security groups created earlier for data layer.
+4. Create an EFS access point. (Give it a name and leave all other settings as default)
+
+![](Images/EFS2.PNG)
+
+
+### STEP 6: Setup RDS
+
+We need to create a KMS to encrypt our database as a security measure.
+
+To ensure that our databases are highly available and also have failover support in case one availability zone fails, we will configure a multi-AZ set up of RDS MySQL database instance.
+
+1. Create a subnet group and add 2 private subnets (data Layer)
+![](Images/subnetGroup.PNG)
+2. Create an RDS Instance for mysql 8.*.*
+![](Images/RDS1.PNG)
+3. To satisfy our architectural diagram, select either Dev/Test or Production Sample Template. But to minimize AWS cost, selected the **Do not create a standby** instance option under Availability & durability sample template (The production template will enable Multi-AZ deployment)
+![](Images/RDS2.PNG)
+4. Configure other settings accordingly (For test purposes, most of the default settings are good to go). 
+5. Configure VPC and security (ensure the database is not available from the Internet)
+6. Configure backups and retention
+7. Encrypt the database using the KMS key created earlier
+8. Enable CloudWatch monitoring and export Error and Slow Query logs (for production, also include Audit).
+![](Images/RDS3.PNG)
+
+## STEP 6: Configuring DNS with Route53
+
+You can use either CNAME or alias records to achieve the same thing. But alias record has better functionality because it is a faster to resolve DNS record, and can coexist with other records on that name. 
+
+1. Create an alias record for the root domain and direct its traffic to the ALB DNS name.
+![](Images/alias1.PNG)
+2. Create an alias record for tooling.<yourdomain>.com and direct its traffic to the ALB DNS name.
+![](Images/alias2.PNG)
