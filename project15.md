@@ -8,6 +8,9 @@ Built a secure infrastructure inside AWS VPC (Virtual Private Cloud) network for
 The infrastructure for both websites, WordPress and Tooling, is resilient to Web Server’s failures, can accomodate to increased traffic and, at the same time, has reasonable cost.
 
 
+![](Images/tooling_project_15.PNG)
+
+
 ## STEP 1: SET UP ORGANISATION UNIT (OU) and  a SUB-ACCOUNT
 1. Properly configure your AWS account and Organization Unit (https://youtu.be/9PQYCc_20-Q)
 
@@ -18,7 +21,6 @@ The infrastructure for both websites, WordPress and Tooling, is resilient to Web
 - Move the DevOps account into the Dev OU.
 - Login to the newly created AWS account using the new email address.
 
-![](Images/uat-server.PNG)
 2. Created a free domain name for company at Freenom domain registrar here (https://www.freenom.com/).
 
 3.  Created a hosted zone in AWS, and map it to your free domain from Freenom. Check how to do this here (https://youtu.be/IjcHp94Hq8A).
