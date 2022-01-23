@@ -156,3 +156,185 @@ PrvateSubnet-3
 ### NAT Gateways
 #### Create 1 NAT Gateways and 1 Elastic IP (EIP) addresses
 - create a new file called ```natgateway.tf```.
+
+***Note:*** We need to create an Elastic IP for the NAT Gateway, and you can see the use of ```depends_on``` to indicate that the Internet Gateway resource must be available before this should be created. Although Terraform does a good job to manage dependencies, but in some cases, it is good to be explicit
+
+```
+resource "aws_eip" "nat_eip" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.ig]
+
+  tags = merge(
+    var.tags,
+    {
+      Name = format("%s-EIP", var.name)
+    },
+  )
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = element(aws_subnet.public.*.id, 0)
+  depends_on    = [aws_internet_gateway.ig]
+
+  tags = merge(
+    var.tags,
+    {
+      Name = format("%s-Nat", var.name)
+    },
+  )
+}
+```
+
+We used the ***element()*** function to select the first element of the array of subnets.
+``` element(list, index) ```
+
+```element(aws_subnet.public.*.id, 0)``` Fetches the first element of the array of subnets.
+
+### AWS ROUTES
+
+Create a file called ```route_tables.tf``` and use it to create routes for both public and private subnets.
+
+Now we Create a route table for the public subnets and a route table for the private subnets.
+
+- aws_route_table
+- aws_route
+- aws_route_table_association
+
+```
+# create private route table
+resource "aws_route_table" "private-rtb" {
+  vpc_id = aws_vpc.main.id
+
+  tags = merge(
+    var.tags,
+    {
+      Name = format("%s-Private-Route-Table", var.name)
+    },
+  )
+}
+
+# associate all private subnets to the private route table
+resource "aws_route_table_association" "private-subnets-assoc" {
+  count          = length(aws_subnet.private[*].id)
+  subnet_id      = element(aws_subnet.private[*].id, count.index)
+  route_table_id = aws_route_table.private-rtb.id
+}
+
+# create route table for the public subnets
+resource "aws_route_table" "public-rtb" {
+  vpc_id = aws_vpc.main.id
+
+  tags = merge(
+    var.tags,
+    {
+      Name = format("%s-Public-Route-Table", var.name)
+    },
+  )
+}
+
+# create route for the public route table and attach the internet gateway
+resource "aws_route" "public-rtb-route" {
+  route_table_id         = aws_route_table.public-rtb.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.ig.id
+}
+
+# associate all public subnets to the public route table
+resource "aws_route_table_association" "public-subnets-assoc" {
+  count          = length(aws_subnet.public[*].id)
+  subnet_id      = element(aws_subnet.public[*].id, count.index)
+  route_table_id = aws_route_table.public-rtb.id
+}
+
+```
+
+### AWS Identity and Access Management
+
+#### IAM and Roles
+
+We want to pass an IAM role our EC2 instances to give them access to some specific resources, so we need to do the following:
+
+1. Create AssumeRole
+
+Assume Role uses Security Token Service (STS) API that returns a set of temporary security credentials that you can use to access AWS resources that you might not normally have access to. These temporary credentials consist of an access key ID, a secret access key, and a security token. Typically, you use AssumeRole within your account or for cross-account access.
+
+Add the following code to a new file named ```roles.tf```
+
+```
+resource "aws_iam_role" "ec2_instance_role" {
+name = "ec2_instance_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "aws assume role"
+    },
+  )
+}
+```
+
+we are creating AssumeRole with AssumeRole policy. It grants to an entity, in our case it is an EC2, permissions to assume the role.
+
+2. Create IAM policy for this role
+```
+resource "aws_iam_policy" "policy" {
+  name        = "ec2_instance_policy"
+  description = "A test policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:Describe*",
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+
+  })
+
+  tags = merge(
+    var.tags,
+    {
+      Name =  "aws assume policy"
+    },
+  )
+
+}
+```
+
+3. Attach the Policy to the IAM Role
+
+we will be attaching the policy which we created above, to the role we created in the first step.
+
+```
+resource "aws_iam_role_policy_attachment" "test-attach" {
+    role       = aws_iam_role.ec2_instance_role.name
+    policy_arn = aws_iam_policy.policy.arn
+}
+```
+
+4. Create an Instance Profile and interpolate the IAM Role
+
+```
+resource "aws_iam_instance_profile" "ip" {
+    name = "aws_instance_profile_test"
+    role =  aws_iam_role.ec2_instance_role.name
+}
+```
+
