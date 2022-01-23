@@ -343,3 +343,4 @@ You can use either CNAME or alias records to achieve the same thing. But alias r
 ![](Images/alias1.PNG)
 2. Create an alias record for tooling.<yourdomain>.com and direct its traffic to the ALB DNS name.
 ![](Images/alias2.PNG)
+
