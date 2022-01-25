@@ -329,6 +329,8 @@ resource "aws_iam_instance_profile" "ip" {
 }
 ```
 
+![https://link](images/role_tf_plan.png)
+
 ### CREATE SECURITY GROUPS 
 
 We are going to create all the security groups in a single file, then we are going to refrence this security group within each resources that needs it.
@@ -1393,11 +1395,109 @@ tags = {
 
 ```
 
+## SIDE NOTE
+
+### IP Address
+An IP address is a unique address that identifies a device on the internet or a local network. IP stands for "Internet Protocol," which is the set of rules governing the format of data sent via the internet or local network.
+
+IP addresses are not random. They are mathematically produced and allocated by the Internet Assigned Numbers Authority (IANA), a division of the Internet Corporation for Assigned Names and Numbers (ICANN). ICANN is a non-profit organization that was established in the United States in 1998 to help maintain the security of the internet and allow it to be usable by all. 
+
+#### Classes of IP
+
+**Class A network:** Everything before the first period indicates the network, and everything after it specifies the device within that network. Using 203.0.113.112 as an example, the network is indicated by "203" and the device by "0.113.112."
+Range: 0.0.0.0 to 127.255.255.255
+
+**Class B network:** Everything before the second period indicates the network. Again using 203.0.113.112 as an example, "203.0" indicates the network and "113.112" indicates the device within that network.
+Range: 128.0.0.0 to 191.255.255.255.
+
+**Class C network:** For Class C networks, everything before the third period indicates the network. Using the same example, "203.0.113" indicates the Class C network, and "112" indicates the device.
+Range: 192.0.0.0 to 223.255.255.255
+
+Claas D Range: 224.0.0.0 to 239.255.255.255
+
+Class E Range: 240.0.0.0 and 255.255.255.255
+
+
+#### SUBNET
+
+A subnet, or subnetwork, is a network inside a network. The way IP addresses are constructed makes it relatively simple for Internet routers to find the right network to route data into. However, in a Class A network (for instance), there could be millions of connected devices, and it could take some time for the data to find the right device. This is why subnetting comes in handy: subnetting narrows down the IP address to usage within a range of devices.
+
+Because an IP address is limited to indicating the network and the device address, IP addresses cannot be used to indicate which subnet an IP packet should go to. Routers within a network use something called a subnet mask to sort data into subnetworks.
+
+
+### CIDR Notation
+A system called Classless Inter-Domain Routing, or CIDR, was developed as an alternative to traditional subnetting. The idea is that you can add a specification in the IP address itself as to the number of significant bits that make up the routing or networking portion.
+
+CIDR is based on the idea of subnet masks. A mask is placed over an IP address and creates a sub network: a network that is subordinate to the internet. The subnet mask signals to the router which part of the IP address is assigned to the hosts (the individual participants of the network) and which determines the network.
+
+Instead of adding a subnet mask, a specification in the form of suffixes can also be integrated directly into the IP address using classless inter-domain routing. But this not only shortens the display: CIDR also makes it possible to create supernets in addition to subnets.
+
+ For example, the class C networks were located between the addresses 192.0.0.0 and 223.255.255.255. A subnet mask (e.g. 255.255.255.0) is like a mask on top of the IP address and specifies the hosts. 
+
+In CIDR notation, this (class C) subnet mask would be /24, since the first 24 bits determine the network component of the IP address.
+
+
+### IP Routing
+
+Network routing is the process of selecting a path across one or more networks. The principles of routing can apply to any type of network, from telephone networks to public transportation. In packet-switching networks, such as the Internet, routing selects the paths for Internet Protocol (IP) packets to travel from their origin to their destination. These Internet routing decisions are made by specialized pieces of network hardware called routers.
+
+Consider the image below. For a data packet to get from Computer A to Computer B, should it pass through networks 1, 3, and 5 or networks 2 and 4? The packet will take a shorter path through networks 2 and 4, but networks 1, 3, and 5 might be faster at forwarding packets than 2 and 4. These are the kinds of choices network routers constantly make.
+
+Routers refer to internal routing tables to make decisions about how to route packets along network paths. A routing table records the paths that packets should take to reach every destination that the router is responsible for. 
+
+Routers work in the following way: when a router receives a packet, it reads the headers* of the packet to see its intended destination, like the way a train conductor may check a passenger's tickets to determine which train they should go on. It then determines where to route the packet based on information in its routing tables.
+
+Routing tables can either be static or dynamic. Static routing tables do not change. A network administrator manually sets up static routing tables. 
+
+Dynamic routing tables update automatically. Dynamic routers use various routing protocols (see below) to determine the shortest and fastest paths. 
+
+
+### Internet Gateways
+
+Internet Gateway (IGW) allows instances with public IPs to access the internet.
+
+An Internet Gateway (IGW) is a logical connection between an Amazon VPC and the Internet. It is not a physical device. Only one can be associated with each VPC. It does not limit the bandwidth of Internet connectivity. (The only limitation on bandwidth is the size of the Amazon EC2 instance, and it applies to all traffic — internal to the VPC and out to the Internet.)
+If a VPC does not have an Internet Gateway, then the resources in the VPC cannot be accessed from the Internet (unless the traffic flows via a corporate network and VPN/Direct Connect).
+An Internet Gateway allows resources within your VPC to access the internet, and vice versa. In order for this to happen, there needs to be a routing table entry allowing a subnet to access the IGW.
+
+
+### NAT Gateways
+
+NAT Gateway (NGW) allows instances with no public IPs to access the internet.
+
+- It allows resources in a private subnet to access the internet (think yum updates, external database connections, wget calls, OS patch, etc).
+- It only works one way. The internet at large cannot get through your NAT to your private resources unless you explicitly allow it.
 
 
 
+### TCP vs OSI
+
+The OSI Model is a logical and conceptual model that defines network communication used by systems open to interconnection and communication with other systems. The Open System Interconnection (OSI Model) also defines a logical network and effectively describes computer packet transfer by using various layers of protocols.
+
+
+TCP/IP helps you to determine how a specific computer should be connected to the internet and how you can transmit data between them. It helps you to create a virtual network when multiple computer networks are connected together.
+
+TCP/IP stands for Transmission Control Protocol/ Internet Protocol. It is specifically designed as a model to offer highly reliable and end-to-end byte stream over an unreliable internetwork.
 
 
 
+#### KEY DIFFERENCES BETWEEN TCP AND OSI
+
+- OSI has 7 layers whereas TCP/IP has 4 layers.
+- The OSI Model is a logical and conceptual model that defines network communication used by systems open to interconnection and communication with other systems. On the other hand, TCP/IP helps you to determine how a specific computer should be connected to the internet and how you can be transmitted between them.
+- OSI header is 5 bytes whereas TCP/IP header size is 20 bytes.
+- OSI refers to Open Systems Interconnection whereas TCP/IP refers to Transmission Control Protocol.
+- OSI follows a vertical approach whereas TCP/IP follows a horizontal approach.
+- OSI model, the transport layer, is only connection-oriented whereas the TCP/IP model is both connection-oriented and connectionless.
+- OSI model is developed by ISO (International Standard Organization), whereas TCP Model is developed by ARPANET (Advanced Research Project Agency Network).
+- OSI model helps you to standardize router, switch, motherboard, and other hardware whereas TCP/IP helps you to establish a connection between different types of computers.
+
+![alt](images/ositcp.png)
 
 
+### ASSUME ROLE POLICY VS ROLE POLICY
+
+Returns a set of temporary security credentials that you can use to access AWS resources that you might not normally have access to. These temporary credentials consist of an access key ID, a secret access key, and a security token. Typically, you use AssumeRole within your account or for cross-account access.
+
+
+An IAM policy is a feature in AWS that is associated with an identity or resource to define the permissions for the said identity or resource. Users manage access in AWS by creating policies and attaching them to IAM identities (users, group of users, or roles) or AWS resources.
