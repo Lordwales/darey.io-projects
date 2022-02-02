@@ -22,7 +22,8 @@ main.tf private subnets code block:
 resource "aws_subnet" "private" {
   count = var.preferred_number_of_public_subnets == null ? length(data.aws_availability_zones.available.names) : var.preferred_number_of_public_subnets 
   vpc_id                     = aws_vpc.main.id
-  cidr_block                 = cidrsubnet(var.vpc_cidr, 4 , count.index)
+  <!-- cidr_block                 = cidrsubnet(var.vpc_cidr, 4 , count.index) -->
+  cidr_block                 = var.public_subnets[count.index]
   map_public_ip_on_launch    = true
   availability_zone          = data.aws_availability_zones.available.names[count.index]
 
@@ -75,7 +76,8 @@ private subnet section:
 resource "aws_subnet" "private" {
   count = var.preferred_number_of_public_subnets == null ? length(data.aws_availability_zones.available.names) : var.preferred_number_of_public_subnets 
   vpc_id                     = aws_vpc.main.id
-  cidr_block                 = cidrsubnet(var.vpc_cidr, 4 , count.index)
+  <!-- cidr_block                 = cidrsubnet(var.vpc_cidr, 4 , count.index)var.private_subnets[count.index] -->
+  cidr_block                 = var.private_subnets[count.index]
   map_public_ip_on_launch    = true
   availability_zone          = data.aws_availability_zones.available.names[count.index]
   tags = merge(
@@ -1380,7 +1382,7 @@ environment = "production"
 
 ami = "ami-0b0af3577fe5e3532"
 
-keypair = "devops"
+keypair = "default-ou"
 
 db-username = "waledevops"
 
@@ -1391,6 +1393,19 @@ tags = {
   Owner-Email     = "infradev-segun@darey.io"
   Managed-By      = "Terraform"
   Billing-Account = "1234567890"
+}
+
+variable "private_subnets" {
+  type        = list(any)
+  description = "List of private subnets"
+  default     = ["10.0.2.0/24", "10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+}
+
+variable "public_subnets" {
+  type        = list(any)
+  description = "list of public subnets"
+  default     = ["10.0.1.0/24", "10.0.3.0/24"]
+
 }
 
 ```

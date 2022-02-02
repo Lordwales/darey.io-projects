@@ -250,7 +250,7 @@ state = "available"
 }
 
 variable "region" {
-      default = "eu-central-1"
+      default = "us-east-1"
 }
 
 variable "vpc_cidr" {
