@@ -2,6 +2,7 @@ This is a repository for some Devops related task and project acommplished. Tool
 
 - Terraform
 - Ansible
+- Packer
 - Jenkins
 - AWS
 - Artifactory
